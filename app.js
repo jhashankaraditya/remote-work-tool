@@ -13,7 +13,20 @@ dotenv.config();
 connectDB();
 const app = express();
 
-app.use(cors());
+// Configure CORS
+const allowedOrigins = ['http://localhost:5173', 'https://remote-work-tool.netlify.app/'];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
 app.use(bodyParser.json());
 
 app.use('/api/auth', authRoutes);
@@ -45,7 +58,7 @@ peerServer.on('error', (error) => {
 // Set up Socket.io server
 const io = new Server(server, {
   cors: {
-    origin: process.env.REACT_APP_FRONTEND_URL, 
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
   },
 });
